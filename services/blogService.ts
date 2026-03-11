@@ -42,7 +42,7 @@ export const STATIC_REPORTS: BlogPost[] = [
       <p>Notre devise, « Solidarité – Justice et Développement », guide chaque membre dans son devoir de respecter le patrimoine et les documents fondamentaux de l'organisation.</p>
     `,
     date: "04 Mai 2024",
-    author: "Bureau National",
+    author: "NDAMBA Paul",
     image_url: "https://images2.imgbox.com/0f/ef/WaPp5wTw_o.jpg",
     category: "Institutionnel",
     read_time: "5 min",
@@ -61,7 +61,7 @@ export const STATIC_REPORTS: BlogPost[] = [
       <p>La revue annuelle du programme EPAD 2025 (UNICEF-Gouvernement) a permis d'évaluer le Plan de Travail Conjoint 2025-2026. Monsieur N’KOMBO Adlon Maurose, Secrétaire Général, y a représenté LAMUKA.</p>
     `,
     date: "31 Déc. 2025",
-    author: "NAMBA Paul",
+    author: "NDAMBA Paul",
     image_url: "https://images2.imgbox.com/58/64/spiZWNSY_o.jpeg",
     category: "Rapport",
     read_time: "12 min",
@@ -76,10 +76,10 @@ export const STATIC_REPORTS: BlogPost[] = [
       <p>Le 12 juillet, participation au dialogue intergénérationnel entre féministes pour définir une stratégie contre les VBG. Fin juillet, participation au Mbongui de la Femme Africaine avec une inclusion inédite : des interprètes en langue des signes.</p>
       
       <h3>Septembre 2025 : Plaidoyer et Justice</h3>
-      <p>Le 6 septembre, participation à la simulation de procès sur les VBG à l'université Henri Lopes. Monsieur N’KOMBO Adlon Maurose (SG) et Monsieur NAMBA Paul (Études) ont assuré le suivi technique de ces dossiers.</p>
+      <p>Le 6 septembre, participation à la simulation de procès sur les VBG à l'université Henri Lopes. Monsieur N’KOMBO Adlon Maurose (SG) et Monsieur NDAMBA Paul (Études) ont assuré le suivi technique de ces dossiers.</p>
     `,
     date: "30 Sept. 2025",
-    author: "NAMBA Paul",
+    author: "NDAMBA Paul",
     image_url: "https://images2.imgbox.com/53/e9/ktmKlPmB_o.jpg",
     category: "Plaidoyer",
     read_time: "10 min",
