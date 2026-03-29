@@ -16,6 +16,7 @@ import {
   fetchSiteStats,
   BlogPost 
 } from '../services/blogService';
+import { cleanupDuplicates } from '../services/cleanupService';
 import { 
   LayoutDashboard, 
   Plus, 
@@ -97,11 +98,22 @@ export const Admin: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  const initAdmin = async () => {
-    const p = await fetchAllPosts(true);
-    const s = await fetchSiteStats();
-    setPosts(p);
-    setStats(s);
+  const initAdmin = async (force: boolean = false) => {
+    setLoading(true);
+    try {
+      if (force) {
+        // Automatically cleanup any duplicate titles in Firestore
+        await cleanupDuplicates();
+      }
+      const p = await fetchAllPosts(force);
+      const s = await fetchSiteStats();
+      setPosts(p);
+      setStats(s);
+    } catch (e) {
+      console.error("Error refreshing admin data", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAISuggest = async () => {
@@ -132,14 +144,32 @@ export const Admin: React.FC = () => {
   };
 
   const handleSave = async () => {
+    setIsGenerating(true);
     try {
       if (editingId) await updatePost(editingId, formData);
       else await createPost(formData);
       alert("Enregistré avec succès !");
       resetForm();
       setActiveTab('list');
-      initAdmin();
-    } catch (e) { alert("Erreur lors de l'enregistrement."); }
+      await initAdmin(true);
+    } catch (e) { alert("Erreur lors de l'enregistrement."); } finally { setIsGenerating(false); }
+  };
+
+  const handleDelete = async (postId: string) => {
+    if(!window.confirm("Action irréversible. Supprimer définitivement cet article du site et de la base de données ?")) return;
+    
+    setIsGenerating(true);
+    try {
+      await deletePost(postId);
+      console.log("Deletion complete, refreshing...");
+      await initAdmin(true); // Force refresh to update the list and stats
+      alert("L'article a été supprimé définitivement.");
+    } catch (error) {
+      console.error("Failed to delete post", error);
+      alert("Erreur lors de la suppression.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -315,7 +345,7 @@ export const Admin: React.FC = () => {
                         <td className="px-10 py-8 text-right">
                            <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-all">
                               <button onClick={() => handleEdit(p)} className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-pink-600 rounded-xl transition-all shadow-sm"><Edit className="w-4 h-4" /></button>
-                              <button onClick={() => { if(window.confirm("Action irréversible. Confirmer ?")) deletePost(p.id as string).then(initAdmin); }} className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-red-500 rounded-xl transition-all shadow-sm"><Trash2 className="w-4 h-4" /></button>
+                              <button onClick={() => handleDelete(p.id as string)} className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-red-500 rounded-xl transition-all shadow-sm"><Trash2 className="w-4 h-4" /></button>
                            </div>
                         </td>
                       </tr>
