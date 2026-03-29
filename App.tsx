@@ -9,6 +9,7 @@ import { Contact } from './pages/Contact';
 import { Blog } from './pages/Blog';
 import { LegalNotice } from './pages/LegalNotice';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { Admin } from './pages/Admin';
 import { BlogPost } from './services/blogService';
 
 const App: React.FC = () => {
@@ -43,6 +44,7 @@ const App: React.FC = () => {
       case 'contact': return <Contact />;
       case 'legal': return <LegalNotice />;
       case 'privacy': return <PrivacyPolicy />;
+      case 'admin': return <Admin />;
       default: return <Home onNavigate={handleNavigate} onOpenPost={openBlogPost} />;
     }
   };

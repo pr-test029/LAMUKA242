@@ -1,28 +1,71 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabaseClient';
-import { LayoutDashboard, Plus, Image as ImageIcon, LogOut, Save, Trash2, Edit, Eye, BarChart3 } from 'lucide-react';
+import { 
+  auth, 
+  googleProvider, 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged,
+  genAI 
+} from '../services/firebase';
+import { 
+  fetchAllPosts, 
+  createPost, 
+  updatePost,
+  deletePost, 
+  fetchSiteStats,
+  BlogPost 
+} from '../services/blogService';
+import { 
+  LayoutDashboard, 
+  Plus, 
+  LogOut, 
+  Save, 
+  Trash2, 
+  Edit, 
+  Sparkles, 
+  Image as ImageIcon,
+  Loader2,
+  ArrowLeft,
+  Search,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  Link as LinkIcon,
+  RotateCcw,
+  Wand2,
+  BarChart3,
+  Eye,
+  Heart,
+  TrendingUp,
+  User as UserIcon,
+  Layers,
+  ChevronRight,
+  Globe,
+  Settings
+} from 'lucide-react';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer
+} from 'recharts';
 
-interface Post {
-  id: number;
-  title: string;
-  category: string;
-  views: number;
-  created_at: string;
-}
+const ADMIN_EMAIL = "collectiflamuka2025@gmail.com";
 
 export const Admin: React.FC = () => {
-  const [session, setSession] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'list' | 'edit'>('list');
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'stats' | 'list' | 'create'>('stats');
+  const [isGenerating, setIsGenerating] = useState(false);
   
-  // Auth Form State
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
   // Editor State
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -32,386 +75,344 @@ export const Admin: React.FC = () => {
     read_time: '5 min',
     image_url: ''
   });
-  const [uploading, setUploading] = useState(false);
+  
+  // AI State
+  const [inputMethod, setInputMethod] = useState<'text' | 'pdf' | 'link'>('text');
+  const [rawInput, setRawInput] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [urlInput, setUrlInput] = useState('');
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && currentUser.email === ADMIN_EMAIL) {
+        setUser(currentUser);
+        initAdmin();
+      } else if (currentUser) {
+        signOut(auth);
+      } else {
+        setUser(null);
+      }
       setLoading(false);
-      if (session) fetchPosts();
     });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) fetchPosts();
-    });
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
-  const fetchPosts = async () => {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('id, title, category, views, created_at')
-      .order('created_at', { ascending: false });
-    
-    if (data) setPosts(data);
+  const initAdmin = async () => {
+    const p = await fetchAllPosts(true);
+    const s = await fetchSiteStats();
+    setPosts(p);
+    setStats(s);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert(error.message);
-    setLoading(false);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAISuggest = async () => {
+    setIsGenerating(true);
     try {
-      setUploading(true);
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('Vous devez sélectionner une image.');
+      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+      let prompt = `Assistant éditorial expert pour LAMUKA. Ton style : INSTITUTIONNEL, PROFESSIONNEL. Réponds en JSON.`;
+      
+      const parts: any[] = [];
+      if (inputMethod === 'text') prompt += `\nTexte: ${rawInput}`;
+      else if (inputMethod === 'pdf' && pdfFile) {
+        const reader = new FileReader();
+        const base64Promise = new Promise(r => { reader.onloadend = () => r((reader.result as string).split(',')[1]); reader.readAsDataURL(pdfFile); });
+        parts.push({ inlineData: { data: await base64Promise, mimeType: pdfFile.type } });
+        prompt += `\nAnalyse ce PDF.`;
+      } else if (inputMethod === 'link') {
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(urlInput)}`);
+        const json = await res.json();
+        prompt += `\nContenu extrait: ${json.contents.substring(0, 4000)}`;
       }
 
-      const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      let { error: uploadError } = await supabase.storage
-        .from('blog-images')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data } = supabase.storage.from('blog-images').getPublicUrl(filePath);
-      setFormData({ ...formData, image_url: data.publicUrl });
-    } catch (error: any) {
-      alert(error.message);
-    } finally {
-      setUploading(false);
-    }
+      prompt += `\nStructure JSON: { "title", "excerpt", "content", "category", "read_time" }`;
+      const result = await model.generateContent([prompt, ...parts]);
+      const data = JSON.parse(result.response.text().match(/\{[\s\S]*\}/)?.[0] || '{}');
+      
+      setFormData({ ...formData, ...data });
+    } catch (e: any) { alert("Erreur IA: " + e.message); } finally { setIsGenerating(false); }
   };
 
   const handleSave = async () => {
-    if (!formData.title || !formData.content) return alert("Le titre et le contenu sont obligatoires");
-
-    const payload = { ...formData };
-    
-    let error;
-    if (editingId) {
-       const { error: err } = await supabase.from('posts').update(payload).eq('id', editingId);
-       error = err;
-    } else {
-       const { error: err } = await supabase.from('posts').insert([payload]);
-       error = err;
-    }
-
-    if (error) {
-      alert("Erreur lors de la sauvegarde: " + error.message);
-    } else {
-      setView('list');
-      setEditingId(null);
-      setFormData({
-        title: '',
-        excerpt: '',
-        content: '',
-        category: 'Actualité',
-        author: 'Paul NDAMBA',
-        read_time: '5 min',
-        image_url: ''
-      });
-      fetchPosts();
-    }
+    try {
+      if (editingId) await updatePost(editingId, formData);
+      else await createPost(formData);
+      alert("Enregistré avec succès !");
+      resetForm();
+      setActiveTab('list');
+      initAdmin();
+    } catch (e) { alert("Erreur lors de l'enregistrement."); }
   };
 
-  const handleEdit = async (id: number) => {
-    const { data } = await supabase.from('posts').select('*').eq('id', id).single();
-    if (data) {
-      setFormData({
-        title: data.title,
-        excerpt: data.excerpt,
-        content: data.content,
-        category: data.category,
-        author: data.author,
-        read_time: data.read_time,
-        image_url: data.image_url
-      });
-      setEditingId(id);
-      setView('edit');
-    }
+  const handleEdit = (post: BlogPost) => {
+    setEditingId(post.id as string);
+    setFormData({
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+      category: post.category,
+      author: post.author,
+      read_time: post.read_time,
+      image_url: post.image_url
+    });
+    setActiveTab('create');
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) {
-      await supabase.from('posts').delete().eq('id', id);
-      fetchPosts();
-    }
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData({ title: '', excerpt: '', content: '', category: 'Actualité', author: 'Paul NDAMBA', read_time: '5 min', image_url: '' });
   };
 
-  // --- LOGIN VIEW ---
-  if (!session) {
+  const handleGoogleLogin = () => signInWithPopup(auth, googleProvider);
+
+  if (loading && !user) return <div className="min-h-screen bg-white flex items-center justify-center"><Loader2 className="w-10 h-10 text-pink-600 animate-spin" /></div>;
+
+  if (!user) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-        <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-slate-900">LAMUKA Admin</h1>
-            <p className="text-slate-500">Connectez-vous pour gérer le site</p>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white p-12 rounded-[2.5rem] shadow-xl max-w-md w-full text-center border border-slate-100">
+          <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+            <LayoutDashboard className="text-white w-10 h-10" />
           </div>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
-                required
-              />
-            </div>
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-pink-600 text-white font-bold py-3 rounded-lg hover:bg-pink-700 transition-colors"
-            >
-              {loading ? 'Connexion...' : 'Se connecter'}
-            </button>
-          </form>
+          <h1 className="text-3xl font-black text-slate-900 mb-4 tracking-tighter">Portail Admin</h1>
+          <p className="text-slate-500 mb-10 font-medium">Connectez-vous pour piloter le contenu de LAMUKA Congo.</p>
+          <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center space-x-4 bg-white border-2 border-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:border-pink-500 transition-all hover:bg-pink-50">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" alt="" />
+            <span>S'identifier avec Google</span>
+          </button>
         </div>
       </div>
     );
   }
 
-  // --- DASHBOARD VIEW ---
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-30">
-        <div className="flex items-center space-x-2">
-          <LayoutDashboard className="text-pink-600" />
-          <span className="font-bold text-slate-900 text-lg">Tableau de Bord</span>
-        </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-slate-500 hidden md:inline">{session.user.email}</span>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center text-slate-600 hover:text-red-600 transition-colors text-sm font-medium"
-          >
-            <LogOut className="w-4 h-4 mr-1" /> Déconnexion
-          </button>
-        </div>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+      {/* BACKGROUND HEADER BAR (AS REQUESTED: NO MORE WHITE GRADIENT) */}
+      <div className="bg-gradient-to-r from-pink-700 via-pink-600 to-purple-800 h-[180px] w-full absolute top-0 left-0 z-0">
+          <div className="absolute inset-0 bg-black/10"></div>
+          {/* Transition gradient removed for clarity */}
       </div>
 
-      <div className="container mx-auto px-4 py-8 flex-1">
-        
-        {view === 'list' && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Stats Cards */}
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-slate-500 text-sm font-medium uppercase tracking-wider">Total Articles</p>
-                    <h3 className="text-3xl font-black text-slate-900 mt-2">{posts.length}</h3>
+      <div className="max-w-7xl mx-auto px-6 relative z-10 pt-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+            <div>
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg text-[10px] font-black uppercase tracking-widest mb-4 border border-white/10 text-white">Gestionnaire LAMUKA</span>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter truncate flex flex-wrap gap-x-3 items-baseline">
+                   <span className="text-black">Salut</span>
+                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 animate-gradient-x">LAMUKA !</span>
+                </h1>
+                <p className="text-black mt-2 font-bold opacity-90 uppercase tracking-widest text-[10px]">Espace de pilotage stratégique des contenus.</p>
+            </div>
+            <div className="flex items-center space-x-2 bg-slate-900/40 backdrop-blur-3xl p-2 rounded-[2rem] border border-white/10 shadow-2xl">
+              {[
+                { id: 'stats', label: 'Dashboard', icon: LayoutDashboard },
+                { id: 'list', label: 'Bibliothèque', icon: FileText },
+                { id: 'create', label: 'Éditeur', icon: Plus },
+              ].map((tab) => (
+                <button 
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id as any); if(tab.id !== 'create') resetForm(); }}
+                  className={`flex items-center space-x-2 px-6 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-white text-slate-900 shadow-xl scale-105' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                >
+                  <tab.icon className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              ))}
+              <div className="w-px h-6 bg-white/10 mx-2"></div>
+              <button onClick={() => signOut(auth)} className="p-3 text-white/40 hover:text-red-400 transition-colors"><LogOut className="w-5 h-5" /></button>
+            </div>
+        </div>
+
+        {activeTab === 'stats' && stats && (
+          <div className="space-y-10 animate-fade-in-up">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { label: 'Impact / Vues', val: stats.totalViews, icon: Eye, color: 'text-pink-600' },
+                { label: 'Rapports Publiés', val: stats.totalArticles, icon: Layers, color: 'text-purple-600' },
+                { label: 'Adhésion / Likes', val: stats.totalLikes, icon: Heart, color: 'text-red-500' },
+              ].map((s, i) => (
+                <div key={i} className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100/50 group hover:border-pink-200 transition-all hover:-translate-y-2">
+                  <div className={`w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 ${s.color} border border-slate-100`}>
+                    <s.icon className="w-7 h-7" />
                   </div>
-                  <div className="p-3 bg-pink-50 rounded-xl text-pink-600">
-                    <LayoutDashboard className="w-6 h-6" />
-                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{s.label}</p>
+                  <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{s.val}</h3>
                 </div>
-              </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-slate-500 text-sm font-medium uppercase tracking-wider">Vues Totales</p>
-                    <h3 className="text-3xl font-black text-slate-900 mt-2">
-                      {posts.reduce((acc, curr) => acc + (curr.views || 0), 0)}
-                    </h3>
-                  </div>
-                  <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
-                    <Eye className="w-6 h-6" />
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-pink-600 to-purple-700 p-6 rounded-2xl shadow-lg text-white flex flex-col justify-center items-center text-center cursor-pointer hover:scale-105 transition-transform" onClick={() => setView('edit')}>
-                <Plus className="w-8 h-8 mb-2" />
-                <span className="font-bold">Nouvel Article</span>
-              </div>
+              ))}
             </div>
 
-            {/* Posts Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="font-bold text-slate-800">Vos Publications</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr>
-                      <th className="px-6 py-4 font-semibold">Titre</th>
-                      <th className="px-6 py-4 font-semibold">Catégorie</th>
-                      <th className="px-6 py-4 font-semibold text-center">Vues</th>
-                      <th className="px-6 py-4 font-semibold text-right">Actions</th>
+            <div className="bg-white rounded-[3rem] p-12 shadow-xl border border-slate-100">
+                <div className="flex items-center justify-between mb-12">
+                   <h3 className="text-2xl font-black flex items-center tracking-tight"><TrendingUp className="mr-4 text-pink-600 w-6 h-6" /> Flux Global des Lectures</h3>
+                   <div className="flex items-center space-x-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><div className="w-4 h-4 rounded-full bg-pink-500"></div><span>Vues cumulées</span></div>
+                </div>
+                <div className="h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={stats.topPosts}>
+                        <defs>
+                          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#db2777" stopOpacity={0.25}/>
+                            <stop offset="95%" stopColor="#db2777" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="title" hide />
+                        <YAxis hide />
+                        <Tooltip contentStyle={{borderRadius: '1.5rem', border: 'none', boxShadow: '0 25px 40px -10px rgb(0 0 0 / 0.1)'}} />
+                        <Area type="monotone" dataKey="views" stroke="#db2777" strokeWidth={5} fillOpacity={1} fill="url(#chartGradient)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'list' && (
+          <div className="animate-fade-in-up">
+            <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden">
+               <div className="p-10 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                 <div>
+                   <h3 className="text-2xl font-black tracking-tight mb-1 text-slate-900">Archives des Publications</h3>
+                   <p className="text-slate-400 text-sm font-medium">Gérez vos articles institutionnels et suivis d'activités.</p>
+                 </div>
+                 <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-pink-600 transition-colors" />
+                    <input type="text" placeholder="Rechercher..." className="bg-slate-50 border-2 border-slate-100 pl-12 pr-6 py-4 rounded-2xl text-sm font-bold focus:border-pink-500 focus:bg-white outline-none w-full md:w-64 transition-all" />
+                 </div>
+               </div>
+               <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-50">
+                      <th className="px-10 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-left">Article & Identité</th>
+                      <th className="px-10 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-left">Rédacteur</th>
+                      <th className="px-10 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Engagement</th>
+                      <th className="px-10 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {posts.map((post) => (
-                      <tr key={post.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-slate-900">{post.title}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold">
-                            {post.category}
-                          </span>
+                  <tbody className="divide-y divide-slate-100">
+                    {posts.map(p => (
+                      <tr key={p.id} className="hover:bg-slate-50/50 transition-all group">
+                        <td className="px-10 py-8">
+                          <div className="flex items-center space-x-6">
+                             <img src={p.image_url} className="w-16 h-16 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition-transform" alt="" />
+                             <div>
+                               <p className="font-black text-slate-900 group-hover:text-pink-600 text-lg transition-colors leading-tight">{p.title}</p>
+                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{p.category} • {p.date}</span>
+                             </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-4 text-center text-slate-500">
-                           <div className="flex items-center justify-center space-x-1">
-                             <BarChart3 className="w-3 h-3" />
-                             <span>{post.views}</span>
+                        <td className="px-10 py-8">
+                           <div className="flex items-center space-x-3">
+                             <div className="w-8 h-8 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center font-black text-xs">{p.author.charAt(0)}</div>
+                             <span className="text-sm font-bold text-slate-600 lowercase first-letter:uppercase">{p.author}</span>
                            </div>
                         </td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                          <button onClick={() => handleEdit(post.id)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                        <td className="px-10 py-8">
+                           <div className="flex justify-center space-x-6 text-xs font-black">
+                              <span className="text-blue-500 flex items-center"><Eye className="w-3.5 h-3.5 mr-1" /> {p.views || 0}</span>
+                              <span className="text-red-500 flex items-center"><Heart className="w-3.5 h-3.5 mr-1" /> {p.likes || 0}</span>
+                           </div>
+                        </td>
+                        <td className="px-10 py-8 text-right">
+                           <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-all">
+                              <button onClick={() => handleEdit(p)} className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-pink-600 rounded-xl transition-all shadow-sm"><Edit className="w-4 h-4" /></button>
+                              <button onClick={() => { if(window.confirm("Action irréversible. Confirmer ?")) deletePost(p.id as string).then(initAdmin); }} className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-red-500 rounded-xl transition-all shadow-sm"><Trash2 className="w-4 h-4" /></button>
+                           </div>
                         </td>
                       </tr>
                     ))}
-                    {posts.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="px-6 py-8 text-center text-slate-400 italic">Aucun article pour le moment.</td>
-                      </tr>
-                    )}
                   </tbody>
                 </table>
-              </div>
+               </div>
             </div>
           </div>
         )}
 
-        {/* EDITOR VIEW */}
-        {view === 'edit' && (
-          <div className="max-w-4xl mx-auto animate-slide-up">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-slate-900">
-                {editingId ? 'Modifier l\'article' : 'Créer un nouvel article'}
-              </h2>
-              <button onClick={() => { setView('list'); setEditingId(null); }} className="text-slate-500 hover:text-slate-800 font-medium">
-                Annuler
-              </button>
-            </div>
+        {(activeTab === 'create' || editingId) && (
+          <div className="animate-fade-in-up space-y-10">
+            <div className="grid lg:grid-cols-5 gap-10 items-start">
+               {/* Left Assistant */}
+               <div className="lg:col-span-2 space-y-8">
+                  <div className="bg-slate-900 text-white rounded-[3rem] p-12 shadow-2xl relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 w-64 h-64 bg-pink-600/10 rounded-full blur-[80px] -mt-32 -mr-32"></div>
+                     <div className="flex items-center space-x-4 mb-10"><Wand2 className="text-pink-500 w-8 h-8" /><h3 className="text-2xl font-black tracking-tighter">Rédaction assistée IA</h3></div>
+                     
+                     <div className="flex space-x-2 p-1.5 bg-white/5 rounded-2xl mb-10 border border-white/5">
+                       {['text', 'pdf', 'link'].map(m => (
+                         <button key={m} onClick={() => setInputMethod(m as any)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${inputMethod === m ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-500 hover:text-white'}`}>{m}</button>
+                       ))}
+                     </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                 <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Titre de l'article</label>
-                    <input 
-                      type="text" 
-                      value={formData.title}
-                      onChange={e => setFormData({...formData, title: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all"
-                      placeholder="Ex: Lancement de la campagne..."
-                    />
-                 </div>
-                 <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Catégorie</label>
-                    <select 
-                      value={formData.category}
-                      onChange={e => setFormData({...formData, category: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none bg-white"
-                    >
-                      <option>Actualité</option>
-                      <option>Témoignage</option>
-                      <option>Santé</option>
-                      <option>Droit</option>
-                      <option>Campagne</option>
-                      <option>Innovation</option>
-                      <option>Partenariat</option>
-                    </select>
-                 </div>
-              </div>
+                     <div className="space-y-6">
+                        {inputMethod === 'text' && <textarea value={rawInput} onChange={e => setRawInput(e.target.value)} placeholder="Contenu brut ici..." className="w-full h-80 bg-white/5 border border-white/10 rounded-[2rem] p-8 text-white text-sm focus:ring-4 focus:ring-pink-500/20 outline-none resize-none transition-all" />}
+                        {inputMethod === 'pdf' && (
+                          <div className="h-80 border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center p-10 text-center hover:bg-white/5 relative group/pdf transition-all">
+                             <input type="file" onChange={e => setPdfFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                             <FileText className="w-12 h-12 text-slate-500 group-hover/pdf:text-pink-500 transition-colors mb-6" />
+                             <p className="text-sm font-bold text-slate-400 group-hover/pdf:text-white transition-colors">{pdfFile ? pdfFile.name : "Déposez votre rapport PDF"}</p>
+                          </div>
+                        )}
+                        {inputMethod === 'link' && <input type="url" value={urlInput} onChange={e => setUrlInput(e.target.value)} placeholder="URL de l'article..." className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 text-white focus:ring-4 focus:ring-pink-500/20 outline-none transition-all" />}
+                        
+                        <button onClick={handleAISuggest} disabled={isGenerating} className="w-full bg-white text-slate-900 font-black py-6 rounded-[2rem] flex items-center justify-center space-x-3 transition-all hover:scale-[1.03] shadow-2xl active:scale-95 disabled:opacity-30">
+                          {isGenerating ? <Loader2 className="animate-spin w-6 h-6 text-pink-600" /> : <Sparkles className="w-6 h-6 text-pink-600" />}
+                          <span className="uppercase text-xs tracking-widest">Transformer en article</span>
+                        </button>
+                     </div>
+                  </div>
+               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Image de couverture</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors relative">
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    disabled={uploading}
-                  />
-                  {uploading ? (
-                    <div className="text-pink-600 font-bold animate-pulse">Téléchargement en cours...</div>
-                  ) : formData.image_url ? (
-                    <div className="relative h-48 w-full">
-                       <img src={formData.image_url} alt="Aperçu" className="h-full w-full object-contain rounded-lg" />
-                       <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white font-bold opacity-0 hover:opacity-100 transition-opacity rounded-lg">Changer l'image</div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center text-slate-400">
-                      <ImageIcon className="w-10 h-10 mb-2" />
-                      <span className="font-medium">Cliquez pour ajouter une image</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Résumé (Apparaît sur la carte)</label>
-                <textarea 
-                  value={formData.excerpt}
-                  onChange={e => setFormData({...formData, excerpt: e.target.value})}
-                  rows={2}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all"
-                  placeholder="Un bref résumé accrocheur..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Contenu (HTML supporté)</label>
-                <div className="text-xs text-gray-400 mb-2">Utilisez des balises &lt;p&gt;, &lt;h3&gt;, &lt;b&gt; pour formater votre texte.</div>
-                <textarea 
-                  value={formData.content}
-                  onChange={e => setFormData({...formData, content: e.target.value})}
-                  rows={15}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all font-mono text-sm"
-                  placeholder="<p>Votre paragraphe ici...</p>"
-                />
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <button 
-                  onClick={handleSave}
-                  className="px-8 py-4 bg-pink-600 text-white font-bold rounded-xl hover:bg-pink-700 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center"
-                >
-                  <Save className="w-5 h-5 mr-2" />
-                  Publier l'article
-                </button>
-              </div>
+               {/* Right Editor */}
+               <div className="lg:col-span-3">
+                  <div className="bg-white rounded-[4rem] p-12 shadow-xl border border-slate-100 space-y-10">
+                     <div className="grid md:grid-cols-2 gap-10">
+                        <div className="space-y-4">
+                           <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 flex items-center"><Globe className="w-3 h-3 mr-2" /> Titre de l'article</label>
+                           <input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-50 border-2 border-slate-100 px-8 py-5 rounded-[1.5rem] font-black text-slate-900 focus:border-pink-500 transition-all outline-none" />
+                        </div>
+                        <div className="space-y-4">
+                           <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 flex items-center"><UserIcon className="w-3 h-3 mr-2" /> Auteur</label>
+                           <input value={formData.author} onChange={e => setFormData({...formData, author: e.target.value})} className="w-full bg-slate-50 border-2 border-slate-100 px-8 py-5 rounded-[1.5rem] font-black text-slate-900 focus:border-pink-500 transition-all outline-none" />
+                        </div>
+                     </div>
+                     <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 flex items-center"><ImageIcon className="w-3 h-3 mr-2" /> URL de l'image de couverture</label>
+                        <input value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} className="w-full bg-slate-50 border-2 border-slate-100 px-8 py-5 rounded-[1.5rem] font-black text-slate-900 focus:border-pink-500 transition-all outline-none" />
+                     </div>
+                     <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 flex items-center"><Edit className="w-3 h-3 mr-2" /> Corps de contenu (HTML)</label>
+                        <textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} rows={12} className="w-full bg-slate-50 border-2 border-slate-100 p-10 rounded-[2.5rem] font-medium text-slate-700 focus:border-pink-500 transition-all outline-none resize-none leading-relaxed" />
+                     </div>
+                     
+                     <div className="flex gap-4">
+                        <button onClick={handleSave} className="flex-1 bg-slate-900 text-white font-black py-6 rounded-[2rem] flex items-center justify-center space-x-4 hover:shadow-2xl transition-all active:scale-95 group">
+                          <Save className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                          <span className="uppercase tracking-widest text-sm">{editingId ? "Actualiser le rapport" : "Publier l'article"}</span>
+                        </button>
+                        {editingId && <button onClick={resetForm} className="bg-slate-100 text-slate-400 px-10 rounded-[2rem] hover:bg-slate-200 transition-all font-black uppercase text-[10px] tracking-widest">Annuler</button>}
+                     </div>
+                  </div>
+               </div>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 6s ease infinite;
+        }
+      `}</style>
     </div>
   );
 };

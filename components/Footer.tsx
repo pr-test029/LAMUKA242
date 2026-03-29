@@ -129,6 +129,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div className="flex space-x-8 text-[10px] text-slate-600 uppercase font-black tracking-[0.2em]">
             <button onClick={() => onNavigate('legal')} className="hover:text-pink-500 transition-colors uppercase">Mentions Légales</button>
             <button onClick={() => onNavigate('privacy')} className="hover:text-pink-500 transition-colors uppercase">Politique de Confidentialité</button>
+            <button onClick={() => onNavigate('admin')} className="opacity-0 hover:opacity-100 text-slate-800 transition-opacity uppercase">Admin</button>
           </div>
         </div>
       </div>
