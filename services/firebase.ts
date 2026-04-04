@@ -35,8 +35,8 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Gemini AI Setup
-const GEMINI_API_KEY = "AIzaSyBgQVfJtMCzm7-sLfWJMyZHetI8eE9g1MI";
+// Gemini AI Setup (L'ancienne clé codée en dur a été supprimée car c'est la cause de la fuite)
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 export const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 export { 

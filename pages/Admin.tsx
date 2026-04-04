@@ -119,7 +119,7 @@ export const Admin: React.FC = () => {
   const handleAISuggest = async () => {
     setIsGenerating(true);
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       let prompt = `Assistant éditorial expert pour LAMUKA. Ton style : INSTITUTIONNEL, PROFESSIONNEL. Réponds en JSON.`;
       
       const parts: any[] = [];
@@ -275,7 +275,7 @@ export const Admin: React.FC = () => {
                    <div className="flex items-center space-x-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><div className="w-4 h-4 rounded-full bg-pink-500"></div><span>Vues cumulées</span></div>
                 </div>
                 <div className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={350}>
                       <AreaChart data={stats.topPosts}>
                         <defs>
                           <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">

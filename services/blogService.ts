@@ -1,16 +1,16 @@
 
-import { 
-  db, 
-  collection, 
-  getDocs, 
-  query, 
-  orderBy, 
-  addDoc, 
-  doc, 
-  deleteDoc, 
-  updateDoc, 
+import {
+  db,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  addDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
   increment,
-  getDoc 
+  getDoc
 } from './firebase';
 
 export interface BlogPost {
@@ -44,7 +44,7 @@ export const fetchAllPosts = async (forceRefresh: boolean = false): Promise<Blog
     const q = query(collection(db, "posts"), orderBy("created_at", "desc"));
     const snapshot = await getDocs(q);
     const dbPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-    
+
     cachedPosts = dbPosts;
     lastFetchTime = now;
     return cachedPosts;
@@ -106,7 +106,7 @@ export const fetchSiteStats = async () => {
   const posts = await fetchAllPosts();
   let totalViews = 0;
   let totalLikes = 0;
-  
+
   posts.forEach(p => {
     totalViews += (p.views || 0);
     totalLikes += (p.likes || 0);
@@ -116,7 +116,7 @@ export const fetchSiteStats = async () => {
     totalArticles: posts.length,
     totalViews,
     totalLikes,
-    topPosts: [...posts].sort((a,b) => (b.views||0) - (a.views||0)).slice(0, 5)
+    topPosts: [...posts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5)
   };
 };
 
@@ -124,7 +124,7 @@ export const fetchSiteStats = async () => {
 export const fetchComments = async (postId: string) => {
   try {
     const q = query(
-      collection(db, `posts/${postId}/comments`), 
+      collection(db, `posts/${postId}/comments`),
       orderBy("created_at", "desc")
     );
     const snapshot = await getDocs(q);
