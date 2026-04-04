@@ -136,6 +136,7 @@ export const Admin: React.FC = () => {
       }
 
       prompt += `\nStructure JSON: { "title", "excerpt", "content", "category", "read_time" }`;
+      prompt += `\nDans la clé "content", utilise du vrai Markdown (**gras**, ## titres, * italique) pour bien structurer ton texte. IMPORTANT : ne renvoie PAS de balises HTML !`;
       const result = await model.generateContent([prompt, ...parts]);
       const data = JSON.parse(result.response.text().match(/\{[\s\S]*\}/)?.[0] || '{}');
       
@@ -409,7 +410,7 @@ export const Admin: React.FC = () => {
                         <input value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} className="w-full bg-slate-50 border-2 border-slate-100 px-8 py-5 rounded-[1.5rem] font-black text-slate-900 focus:border-pink-500 transition-all outline-none" />
                      </div>
                      <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 flex items-center"><Edit className="w-3 h-3 mr-2" /> Corps de contenu (HTML)</label>
+                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 flex items-center"><Edit className="w-3 h-3 mr-2" /> Corps de contenu (Markdown supporté)</label>
                         <textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} rows={12} className="w-full bg-slate-50 border-2 border-slate-100 p-10 rounded-[2.5rem] font-medium text-slate-700 focus:border-pink-500 transition-all outline-none resize-none leading-relaxed" />
                      </div>
                      

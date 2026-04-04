@@ -26,6 +26,7 @@ import {
   fetchComments, 
   addComment 
 } from '../services/blogService';
+import ReactMarkdown from 'react-markdown';
 
 interface BlogProps {
   initialPost?: BlogPost | null;
@@ -165,7 +166,9 @@ export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) =
               <div className="text-2xl md:text-3xl font-bold text-slate-900 leading-relaxed mb-16 italic border-l-8 border-pink-500 pl-10 bg-slate-50/50 py-10 rounded-r-[3rem] tracking-tight">
                  {selectedPost.excerpt}
               </div>
-              <div className="text-slate-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: selectedPost.content }} />
+              <div className="text-slate-700 leading-relaxed">
+                <ReactMarkdown>{selectedPost.content}</ReactMarkdown>
+              </div>
             </article>
 
             {/* Comments Section */}
