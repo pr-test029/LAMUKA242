@@ -1,9 +1,15 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Shield, HeartHandshake, Mic2, Users, ArrowRight, CheckCircle2, Briefcase } from 'lucide-react';
 
 export const Services: React.FC = () => {
   return (
     <div className="bg-slate-50 min-h-screen overflow-hidden">
+      <Helmet>
+        <title>Nos Actions & Services | Collectif LAMUKA</title>
+        <meta name="description" content="Découvrez les actions clés et les services mis en place par le Collectif LAMUKA : Justice, Santé, Entrepreneuriat et Formation pour les femmes en situation de handicap." />
+        <meta name="keywords" content="actions LAMUKA, services, justice, VBG, santé, entrepreneuriat" />
+      </Helmet>
       {/* Animations Styles */}
       <style>{`
         @keyframes float {

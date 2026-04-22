@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
@@ -13,51 +13,48 @@ import { Admin } from './pages/Admin';
 import { BlogPost } from './services/blogService';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState('home');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   const handleNavigate = (page: string) => {
-    setCurrentPage(page);
-    if (page !== 'blog') {
+    if (page !== '/blog') {
       setSelectedPost(null);
     }
-    window.scrollTo(0, 0);
+    // Handle old format to new format
+    const path = page.startsWith('/') ? page : (page === 'home' ? '/' : `/${page}`);
+    navigate(path);
   };
 
   const openBlogPost = (post: BlogPost) => {
     setSelectedPost(post);
-    setCurrentPage('blog');
-    window.scrollTo(0, 0);
-  };
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home': return <Home onNavigate={handleNavigate} onOpenPost={openBlogPost} />;
-      case 'about': return <About />;
-      case 'services': return <Services />;
-      case 'blog': return (
-        <Blog 
-          initialPost={selectedPost} 
-          onClearInitialPost={() => setSelectedPost(null)} 
-        />
-      );
-      case 'contact': return <Contact />;
-      case 'legal': return <LegalNotice />;
-      case 'privacy': return <PrivacyPolicy />;
-      case 'admin': return <Admin />;
-      default: return <Home onNavigate={handleNavigate} onOpenPost={openBlogPost} />;
-    }
+    navigate('/blog');
   };
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-900 bg-white">
-      <Header currentPage={currentPage} onNavigate={handleNavigate} />
+      <Header />
       
       <main className="flex-grow">
-        {renderPage()}
+        <Routes>
+          <Route path="/" element={<Home onNavigate={handleNavigate} onOpenPost={openBlogPost} />} />
+          <Route path="/a-propos" element={<About />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/blog" element={<Blog initialPost={selectedPost} onClearInitialPost={() => setSelectedPost(null)} />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/legal" element={<LegalNotice />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<Home onNavigate={handleNavigate} onOpenPost={openBlogPost} />} />
+        </Routes>
       </main>
       
-      <Footer onNavigate={handleNavigate} />
+      <Footer />
     </div>
   );
 };

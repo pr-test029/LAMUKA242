@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Mail, Phone, MapPin, Facebook, Navigation, Loader2, ExternalLink, Send, MessageCircle, Clock, HeartHandshake } from 'lucide-react';
 
 export const Contact: React.FC = () => {
@@ -32,6 +33,11 @@ export const Contact: React.FC = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans selection:bg-pink-100 selection:text-pink-600">
+      <Helmet>
+        <title>Contact & Soutien | Collectif LAMUKA</title>
+        <meta name="description" content="Contactez le Collectif LAMUKA pour toute question ou pour nous soutenir. Retrouvez nos coordonnées à Brazzaville." />
+        <meta name="keywords" content="contact LAMUKA, soutenir, association, Brazzaville, email, téléphone" />
+      </Helmet>
       {/* Harmonized Hero Section - Match About.tsx */}
       <section className="relative py-24 md:py-32 bg-slate-900 text-white overflow-hidden">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-pink-600/20 rounded-full blur-[100px] animate-pulse -translate-y-1/2 translate-x-1/3"></div>

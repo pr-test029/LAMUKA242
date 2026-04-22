@@ -1,12 +1,9 @@
 
 import React from 'react';
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, ArrowUpRight, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-interface FooterProps {
-  onNavigate: (page: string) => void;
-}
-
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61566101510604";
 
@@ -20,9 +17,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           
           {/* Colonne 1 : Branding & Logo */}
           <div className="space-y-6">
-            <div 
+            <Link 
+              to="/"
               className="flex items-center cursor-pointer group" 
-              onClick={() => onNavigate('home')}
             >
               <div className="relative">
                 <img 
@@ -35,7 +32,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </div>
               </div>
               <span className="font-black text-2xl text-white tracking-tighter">LAMUKA</span>
-            </div>
+            </Link>
             <p className="text-slate-400 leading-relaxed italic text-sm">
               "Solidarité – Justice - Développement"
             </p>
@@ -62,20 +59,20 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </h4>
             <ul className="space-y-3">
               {[
-                { id: 'home', label: 'Accueil' },
-                { id: 'about', label: 'À Propos' },
-                { id: 'services', label: 'Nos Actions' },
-                { id: 'blog', label: 'Actualités' },
-                { id: 'contact', label: 'Contact' },
+                { id: '/', label: 'Accueil' },
+                { id: '/a-propos', label: 'À Propos' },
+                { id: '/services', label: 'Nos Actions' },
+                { id: '/blog', label: 'Actualités' },
+                { id: '/contact', label: 'Contact' },
               ].map((link) => (
                 <li key={link.id}>
-                  <button 
-                    onClick={() => onNavigate(link.id)}
+                  <Link 
+                    to={link.id}
                     className="flex items-center group text-slate-400 hover:text-white transition-colors text-sm"
                   >
                     <ArrowUpRight size={14} className="mr-2 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-pink-500" />
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -111,12 +108,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <p className="text-xs text-slate-400 mb-4 leading-relaxed">
                 Votre soutien permet d'offrir un avenir plus digne aux femmes en situation de handicap.
               </p>
-              <button 
-                onClick={() => onNavigate('contact')}
-                className="w-full py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-500 hover:to-pink-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-pink-500/20 active:scale-95"
+              <Link 
+                to="/contact"
+                className="block w-full py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-500 hover:to-pink-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-pink-500/20 active:scale-95 text-center"
               >
                 Contribuer
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -127,9 +124,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             &copy; {currentYear} <span className="text-slate-300 font-semibold mx-1">Collectif LAMUKA</span> — Fait avec <Heart size={14} className="mx-1 text-pink-600 fill-current" /> pour l'inclusion.
           </div>
           <div className="flex space-x-8 text-[10px] text-slate-600 uppercase font-black tracking-[0.2em]">
-            <button onClick={() => onNavigate('legal')} className="hover:text-pink-500 transition-colors uppercase">Mentions Légales</button>
-            <button onClick={() => onNavigate('privacy')} className="hover:text-pink-500 transition-colors uppercase">Politique de Confidentialité</button>
-            <button onClick={() => onNavigate('admin')} className="opacity-0 hover:opacity-100 text-slate-800 transition-opacity uppercase">Admin</button>
+            <Link to="/legal" className="hover:text-pink-500 transition-colors uppercase">Mentions Légales</Link>
+            <Link to="/privacy" className="hover:text-pink-500 transition-colors uppercase">Politique de Confidentialité</Link>
+            <Link to="/admin" className="opacity-0 hover:opacity-100 text-slate-800 transition-opacity uppercase">Admin</Link>
           </div>
         </div>
       </div>

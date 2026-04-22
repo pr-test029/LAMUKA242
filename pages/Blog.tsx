@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { 
   Calendar, 
   ArrowRight, 
@@ -117,6 +117,13 @@ export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) =
   if (selectedPost) {
     return (
       <div className="bg-white min-h-screen animate-fade-in pb-20 font-sans pt-16 md:pt-24">
+        <Helmet>
+          <title>{`${selectedPost.title} | Blog LAMUKA`}</title>
+          <meta name="description" content={selectedPost.excerpt} />
+          <meta property="og:title" content={selectedPost.title} />
+          <meta property="og:description" content={selectedPost.excerpt} />
+          <meta property="og:image" content={selectedPost.image_url} />
+        </Helmet>
         {/* Harmonized Single Post View - RESTORED TITLE & BACK BUTTON */}
         <div className="container mx-auto px-6 mb-12">
             <button 
@@ -223,6 +230,11 @@ export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) =
 
   return (
     <div className="bg-slate-50 min-h-screen">
+      <Helmet>
+        <title>Blog & Actualités | Collectif LAMUKA</title>
+        <meta name="description" content="L'écho de LAMUKA : chroniques, articles et actualités sur l'inclusion, l'entrepreneuriat et les droits des femmes en situation de handicap." />
+        <meta name="keywords" content="blog, LAMUKA, actualités, articles, témoignages, inclusion" />
+      </Helmet>
       {/* Harmonized Hero - Match About.tsx style */}
       <section className="relative py-24 md:py-32 bg-slate-900 text-white overflow-hidden">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-pink-600/20 rounded-full blur-[100px] animate-pulse -translate-y-1/2 translate-x-1/3"></div>

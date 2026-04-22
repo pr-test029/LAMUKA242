@@ -1,10 +1,16 @@
 // Add missing React import
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Target, Heart, Sparkles, Shield } from 'lucide-react';
 
 export const About: React.FC = () => {
   return (
     <div className="bg-slate-50 min-h-screen overflow-hidden">
+      <Helmet>
+        <title>À Propos | Collectif LAMUKA</title>
+        <meta name="description" content="Découvrez l'histoire, la vision et les objectifs du Collectif LAMUKA. Promouvoir l'inclusion sociale de la femme vivant avec handicap." />
+        <meta name="keywords" content="A propos, association LAMUKA, histoire, vision, objectifs, inclusion" />
+      </Helmet>
       <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }

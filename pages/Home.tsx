@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { ArrowRight, Shield, HeartHandshake, Users, ChevronRight, ChevronLeft, Calendar, Clock } from 'lucide-react';
 import { fetchAllPosts, BlogPost } from '../services/blogService';
 
@@ -35,6 +36,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onOpenPost }) => {
 
   return (
     <div className="flex flex-col overflow-x-hidden">
+      <Helmet>
+        <title>Accueil | Collectif LAMUKA - Solidarité, Justice, Développement</title>
+        <meta name="description" content="Collectif LAMUKA milite pour l'autonomisation et l'inclusion des femmes en situation de handicap au Congo. Découvrez nos actions pour la solidarité, la justice et le développement." />
+        <meta name="keywords" content="LAMUKA, femmes, handicap, Congo, Brazzaville, VBG, solidarité, association" />
+        <meta property="og:title" content="Accueil | Collectif LAMUKA" />
+        <meta property="og:description" content="Découvrez les actions de l'association LAMUKA pour les femmes en situation de handicap au Congo." />
+      </Helmet>
       <style>{`
         @keyframes progress {
           from { width: 0%; }
