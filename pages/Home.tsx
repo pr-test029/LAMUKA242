@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Shield, HeartHandshake, Users, ChevronRight, ChevronLeft, Calendar, Clock } from 'lucide-react';
+import { ArrowRight, Shield, HeartHandshake, Users, ChevronRight, ChevronLeft, Calendar, Clock, Target, CheckCircle2, Quote, Star, Award } from 'lucide-react';
 import { fetchAllPosts, BlogPost } from '../services/blogService';
 
 interface HomeProps {
@@ -181,6 +181,111 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onOpenPost }) => {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-24 bg-slate-50 relative overflow-hidden">
+        <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-16 items-center">
+          <div className="relative">
+            <div className="absolute inset-0 bg-pink-200 rounded-[3rem] transform translate-x-4 translate-y-4"></div>
+            <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=2069&auto=format&fit=crop" alt="Equipe LAMUKA" className="relative z-10 w-full h-[500px] object-cover rounded-[3rem] shadow-2xl" />
+            <div className="absolute -bottom-8 -right-8 bg-white p-6 rounded-3xl shadow-xl z-20 flex items-center gap-4">
+               <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600">
+                  <Target className="w-8 h-8" />
+               </div>
+               <div>
+                  <div className="text-3xl font-black text-slate-900">+500</div>
+                  <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">Femmes accompagnées</div>
+               </div>
+            </div>
+          </div>
+          <div className="space-y-8 pl-0 lg:pl-10">
+            <span className="inline-block px-4 py-2 bg-pink-100 text-pink-600 rounded-full text-xs font-black uppercase tracking-widest">Qui Sommes-Nous ?</span>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Agir ensemble pour l'inclusion et la dignité.</h2>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Le Collectif LAMUKA est né d'une volonté farouche de donner une voix et des opportunités aux jeunes filles et femmes en situation de handicap au Congo. Nous luttons au quotidien contre les discriminations et les violences basées sur le genre.
+            </p>
+            <ul className="space-y-4 text-slate-700 font-medium">
+               <li className="flex items-center"><CheckCircle2 className="w-6 h-6 text-pink-500 mr-3" /> Soutien psychologique et juridique</li>
+               <li className="flex items-center"><CheckCircle2 className="w-6 h-6 text-pink-500 mr-3" /> Formation professionnelle continue</li>
+               <li className="flex items-center"><CheckCircle2 className="w-6 h-6 text-pink-500 mr-3" /> Sensibilisation aux droits reproductifs</li>
+            </ul>
+            <button onClick={() => onNavigate('about')} className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-900 rounded-full font-bold shadow-sm hover:border-pink-500 hover:text-pink-600 transition-all flex items-center mt-4">
+              Découvrir notre histoire <ArrowRight className="ml-2 w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 bg-white relative">
+        <div className="container mx-auto px-4">
+           <div className="text-center max-w-2xl mx-auto mb-16">
+              <span className="inline-block px-4 py-2 bg-slate-100 text-slate-600 rounded-full text-xs font-black uppercase tracking-widest mb-4">Impact Social</span>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">Elles ont repris le contrôle</h2>
+              <p className="text-slate-500 text-lg">Découvrez les témoignages de femmes inspirantes que le Collectif a accompagnées dans leur parcours d'autonomisation.</p>
+           </div>
+           
+           <div className="grid md:grid-cols-3 gap-8">
+              {[
+                { name: "Marie K.", role: "Entrepreneure", quote: "Grâce à LAMUKA, j'ai pu lancer mon petit commerce. Leur soutien m'a redonné confiance en mes capacités malgré mon handicap." },
+                { name: "Sarah L.", role: "Bénévole", quote: "Les ateliers sur les droits sexuels m'ont permis de mieux comprendre mon corps et de me protéger. C'est un espace bienveillant." },
+                { name: "Evelyne M.", role: "Etudiante", quote: "L'accompagnement juridique m'a été indispensable. LAMUKA n'est pas juste une association, c'est une famille qui se bat pour vous." }
+              ].map((testi, idx) => (
+                <div key={idx} className="bg-slate-50 p-10 rounded-[2.5rem] relative">
+                   <Quote className="absolute top-8 right-8 w-12 h-12 text-pink-200/50" />
+                   <div className="flex text-yellow-400 mb-6">
+                      {[1,2,3,4,5].map(star => <Star key={star} className="w-5 h-5 fill-current" />)}
+                   </div>
+                   <p className="text-slate-700 leading-relaxed text-lg italic mb-8 font-medium">"{testi.quote}"</p>
+                   <div className="flex items-center gap-4 border-t border-slate-200 pt-6">
+                      <div className="w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center text-white font-black text-lg">{testi.name.charAt(0)}</div>
+                      <div>
+                         <h4 className="font-black text-slate-900">{testi.name}</h4>
+                         <span className="text-xs font-bold text-pink-600 uppercase tracking-widest">{testi.role}</span>
+                      </div>
+                   </div>
+                </div>
+              ))}
+           </div>
+        </div>
+      </section>
+
+      {/* Partners Section */}
+      <section className="py-16 bg-slate-900 border-t border-slate-800">
+         <div className="container mx-auto px-4 text-center">
+            <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-10">Ils soutiennent nos actions</p>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-700">
+               <img src="https://logo.clearbit.com/unfpa.org" alt="UNFPA" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" onError={(e) => e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/UNFPA_logo.svg/320px-UNFPA_logo.svg.png'} />
+               <img src="https://logo.clearbit.com/unesco.org" alt="UNESCO" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" onError={(e) => e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/UNESCO_logo.svg/320px-UNESCO_logo.svg.png'} />
+               <img src="https://logo.clearbit.com/iecd.org" alt="IECD" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" />
+               <img src="https://logo.clearbit.com/undp.org" alt="UNDP" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" />
+               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Coat_of_arms_of_the_Republic_of_the_Congo.svg/200px-Coat_of_arms_of_the_Republic_of_the_Congo.svg.png" alt="République du Congo" className="h-12 md:h-16 object-contain" />
+               <img src="https://logo.clearbit.com/unicef.org" alt="UNICEF" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" />
+               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/200px-Flag_of_Europe.svg.png" alt="Union Européenne" className="h-10 md:h-14 object-contain" />
+            </div>
+         </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative py-32 overflow-hidden">
+         <div className="absolute inset-0 bg-gradient-to-br from-pink-600 to-purple-800"></div>
+         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+         
+         <div className="container mx-auto px-4 relative z-10 text-center">
+            <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter">Prêt(e) à faire la différence ?</h2>
+            <p className="text-xl text-pink-100 max-w-2xl mx-auto mb-12 leading-relaxed">
+               Que ce soit par un don, du bénévolat ou un partenariat, chaque geste compte pour bâtir une société plus juste et inclusive.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-6">
+               <button onClick={() => onNavigate('contact')} className="px-10 py-5 bg-white text-pink-600 rounded-full font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-transform">
+                  S'engager avec nous
+               </button>
+               <button onClick={() => onNavigate('contact')} className="px-10 py-5 bg-pink-700/50 text-white border border-pink-400/50 rounded-full font-black uppercase tracking-widest hover:bg-pink-700 transition-colors backdrop-blur-md">
+                  Faire un don
+               </button>
+            </div>
+         </div>
       </section>
     </div>
   );
