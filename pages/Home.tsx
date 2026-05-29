@@ -54,6 +54,14 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onOpenPost }) => {
           to { opacity: 1; transform: translateX(0); }
         }
         .animate-fade-in-right { animation: fade-in-right 0.5s ease-out forwards; }
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-scroll { 
+           animation: scroll 30s linear infinite; 
+           width: max-content;
+        }
       `}</style>
 
       {/* Hero Section */}
@@ -252,17 +260,30 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onOpenPost }) => {
       </section>
 
       {/* Partners Section */}
-      <section className="py-16 bg-slate-900 border-t border-slate-800">
-         <div className="container mx-auto px-4 text-center">
-            <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-10">Ils soutiennent nos actions</p>
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-700">
-               <img src="https://logo.clearbit.com/unfpa.org" alt="UNFPA" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" onError={(e) => e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/UNFPA_logo.svg/320px-UNFPA_logo.svg.png'} />
-               <img src="https://logo.clearbit.com/unesco.org" alt="UNESCO" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" onError={(e) => e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/UNESCO_logo.svg/320px-UNESCO_logo.svg.png'} />
-               <img src="https://logo.clearbit.com/iecd.org" alt="IECD" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" />
-               <img src="https://logo.clearbit.com/undp.org" alt="UNDP" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" />
-               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Coat_of_arms_of_the_Republic_of_the_Congo.svg/200px-Coat_of_arms_of_the_Republic_of_the_Congo.svg.png" alt="République du Congo" className="h-12 md:h-16 object-contain" />
-               <img src="https://logo.clearbit.com/unicef.org" alt="UNICEF" className="h-10 md:h-14 object-contain bg-white/10 p-2 rounded-xl" />
-               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/200px-Flag_of_Europe.svg.png" alt="Union Européenne" className="h-10 md:h-14 object-contain" />
+      <section className="py-16 bg-slate-900 border-t border-slate-800 overflow-hidden">
+         <div className="container mx-auto px-4 text-center mb-10">
+            <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Ils soutiennent nos actions</p>
+         </div>
+         <div className="relative w-full flex overflow-hidden group">
+            <div className="flex animate-scroll group-hover:[animation-play-state:paused]">
+               <div className="flex shrink-0 items-center space-x-12 md:space-x-24 px-6 md:px-12 opacity-60 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-700">
+                  <img src="https://i.ibb.co/JRFftbwp/UNFPA-logo-svg.png" alt="UNFPA" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/jkhYJP6n/unesco-logo-03-freelogovectors-net.png" alt="UNESCO" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/tPktx9Dq/2019-logo-iecd-baseline-hd.png" alt="IECD" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain rounded-xl bg-white p-2" />
+                  <img src="https://i.ibb.co/r2NVjV1L/UNDO-Co-GEN-Logo-PNUD-No-Slogan-largo-04.png" alt="UNDP" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/7tpkBrVJ/armoiries-congo.jpg" alt="République du Congo" className="h-12 md:h-16 shrink-0 min-w-[80px] object-contain rounded-xl" />
+                  <img src="https://i.ibb.co/W4fYcT3L/Logo-of-UNICEF-svg.png" alt="UNICEF" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/fVPB8pnM/Flag-of-Europe-svg.png" alt="Union Européenne" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain rounded-xl" />
+               </div>
+               <div className="flex shrink-0 items-center space-x-12 md:space-x-24 px-6 md:px-12 opacity-60 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-700">
+                  <img src="https://i.ibb.co/JRFftbwp/UNFPA-logo-svg.png" alt="UNFPA" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/jkhYJP6n/unesco-logo-03-freelogovectors-net.png" alt="UNESCO" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/tPktx9Dq/2019-logo-iecd-baseline-hd.png" alt="IECD" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain rounded-xl bg-white p-2" />
+                  <img src="https://i.ibb.co/r2NVjV1L/UNDO-Co-GEN-Logo-PNUD-No-Slogan-largo-04.png" alt="UNDP" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/7tpkBrVJ/armoiries-congo.jpg" alt="République du Congo" className="h-12 md:h-16 shrink-0 min-w-[80px] object-contain rounded-xl" />
+                  <img src="https://i.ibb.co/W4fYcT3L/Logo-of-UNICEF-svg.png" alt="UNICEF" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain bg-white p-2 rounded-xl" />
+                  <img src="https://i.ibb.co/fVPB8pnM/Flag-of-Europe-svg.png" alt="Union Européenne" className="h-10 md:h-14 shrink-0 min-w-[80px] object-contain rounded-xl" />
+               </div>
             </div>
          </div>
       </section>
