@@ -34,7 +34,7 @@ interface BlogProps {
 }
 
 export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) => {
-  const [selectedCategory, setSelectedCategory] = useState("Tout");
+
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,10 +98,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) =
     setIsSubmitting(false);
   };
 
-  const categories = ["Tout", ...Array.from(new Set(posts.map(p => p.category)))];
-  const filteredPosts = selectedCategory === "Tout" 
-    ? posts 
-    : posts.filter(p => p.category === selectedCategory);
+  const filteredPosts = posts;
 
   if (loading && posts.length === 0) {
     return (
@@ -253,22 +250,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) =
         </div>
       </section>
 
-      {/* Filter Tabs - Harmonized (Rounded & White) */}
-      <div className="sticky top-16 z-40 py-8 -mt-10">
-        <div className="container mx-auto px-4 flex justify-center">
-           <div className="bg-white/95 backdrop-blur-xl border border-slate-100 shadow-xl rounded-[2.5rem] p-3 flex flex-wrap justify-center gap-2">
-                 {categories.map((cat) => (
-                   <button 
-                    key={cat} 
-                    onClick={() => setSelectedCategory(cat)} 
-                    className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedCategory === cat ? 'bg-pink-600 text-white shadow-lg shadow-pink-600/30' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-950'}`}
-                   >
-                     {cat}
-                   </button>
-                 ))}
-           </div>
-        </div>
-      </div>
+
 
       <div className="container mx-auto px-4 py-20 pb-40">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
