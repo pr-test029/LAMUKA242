@@ -171,7 +171,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) =
               <div className="text-2xl md:text-3xl font-bold text-slate-900 leading-relaxed mb-16 italic border-l-8 border-pink-500 pl-10 bg-slate-50/50 py-10 rounded-r-[3rem] tracking-tight">
                  {selectedPost.excerpt}
               </div>
-              <div className="text-slate-700 leading-relaxed prose-table:w-full prose-th:border prose-th:bg-slate-50 prose-th:p-4 prose-td:border prose-td:p-4">
+              <div className="prose prose-slate prose-lg max-w-none prose-headings:font-black prose-p:mb-8 text-slate-700 leading-relaxed prose-table:w-full prose-th:border prose-th:bg-slate-50 prose-th:p-4 prose-td:border prose-td:p-4">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedPost.content}</ReactMarkdown>
               </div>
             </article>
