@@ -171,8 +171,20 @@ export const Blog: React.FC<BlogProps> = ({ initialPost, onClearInitialPost }) =
               <div className="text-2xl md:text-3xl font-bold text-slate-900 leading-relaxed mb-16 italic border-l-8 border-pink-500 pl-10 bg-slate-50/50 py-10 rounded-r-[3rem] tracking-tight">
                  {selectedPost.excerpt}
               </div>
-              <div className="prose prose-slate prose-lg max-w-none prose-headings:font-black prose-p:mb-8 text-slate-700 leading-relaxed prose-table:w-full prose-th:border prose-th:bg-slate-50 prose-th:p-4 prose-td:border prose-td:p-4">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedPost.content}</ReactMarkdown>
+              <div className="prose prose-slate prose-lg max-w-none text-slate-700 leading-relaxed prose-table:w-full prose-th:border prose-th:bg-slate-50 prose-th:p-4 prose-td:border prose-td:p-4">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({node, ...props}) => <h1 className="text-4xl font-black underline decoration-pink-500 underline-offset-4 mb-8 mt-12 text-slate-900" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="text-3xl font-black underline decoration-pink-500 underline-offset-4 mb-6 mt-10 text-slate-900" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-2xl font-black underline decoration-pink-500 underline-offset-4 mb-6 mt-10 text-slate-900" {...props} />,
+                    h4: ({node, ...props}) => <h4 className="text-xl font-black underline decoration-pink-500 underline-offset-4 mb-4 mt-8 text-slate-900" {...props} />,
+                    p: ({node, ...props}) => <p className="mb-10 whitespace-pre-wrap leading-relaxed text-lg" {...props} />,
+                    strong: ({node, ...props}) => <strong className="font-black text-slate-900" {...props} />,
+                  }}
+                >
+                  {(selectedPost.content || '').replace(/^(?!\s*#)\s*(\d+(?:\.\d+)*\.?)\s+(.+)$/gm, '### $1 $2')}
+                </ReactMarkdown>
               </div>
             </article>
 
