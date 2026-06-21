@@ -6,29 +6,14 @@ import { Mail, Phone, MapPin, Facebook, Navigation, Loader2, ExternalLink, Send,
 export const Contact: React.FC = () => {
   const [isLocating, setIsLocating] = useState(false);
   const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61566101510604";
-  const DESTINATION_COORDS = "-4.2687132,15.2393222";
+  const GOOGLE_MAPS_LINK = "https://maps.app.goo.gl/zbwUwhUjDLNiNCDu7";
 
   const handleGetDirections = () => {
     setIsLocating(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const url = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${DESTINATION_COORDS}&travelmode=driving`;
-          window.open(url, '_blank');
-          setIsLocating(false);
-        },
-        () => {
-          const url = `https://www.google.com/maps/dir/?api=1&destination=${DESTINATION_COORDS}`;
-          window.open(url, '_blank');
-          setIsLocating(false);
-        }
-      );
-    } else {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${DESTINATION_COORDS}`;
-      window.open(url, '_blank');
+    setTimeout(() => {
+      window.open(GOOGLE_MAPS_LINK, '_blank');
       setIsLocating(false);
-    }
+    }, 300);
   };
 
   return (
@@ -71,12 +56,14 @@ export const Contact: React.FC = () => {
                     <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-pink-600 group-hover:bg-pink-600 group-hover:text-white transition-all shadow-sm border border-slate-100">
                       <MapPin className="w-6 h-6" />
                     </div>
-                    <div>
+                    <a href={GOOGLE_MAPS_LINK} target="_blank" rel="noreferrer" className="block hover:opacity-80 transition-opacity">
                       <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none mb-2">Adresse du Siège</h4>
-                      <p className="text-lg font-bold text-slate-900">20, rue KIPOUANDZA</p>
+                      <p className="text-lg font-bold text-slate-900 flex items-center">
+                        20, rue KIPOUANDZA <ExternalLink className="w-4 h-4 ml-2 text-pink-500" />
+                      </p>
                       <p className="text-slate-500 text-sm">Mfilou-NGAMABA, Brazzaville</p>
                       <p className="text-pink-600 text-[10px] font-black uppercase tracking-widest mt-2">Terminus Avenue Mayama</p>
-                    </div>
+                    </a>
                   </div>
 
                   <div className="flex items-start space-x-6 group">

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Shield, HeartHandshake, Users, ChevronRight, ChevronLeft, Calendar, Clock, Target, CheckCircle2, Quote, Star, Award } from 'lucide-react';
+import { ArrowRight, Shield, HeartHandshake, Users, ChevronRight, ChevronLeft, Calendar, Clock, Target, CheckCircle2, Quote, Star, Award, Scale, HeartPulse, Sparkles } from 'lucide-react';
 import { fetchAllPosts, BlogPost } from '../services/blogService';
 
 interface HomeProps {
@@ -143,15 +143,33 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onOpenPost }) => {
       </section>
 
       {/* Rest of the sections (Stats, Services, CTA) */}
-      <section className="bg-slate-900 text-white py-20 relative overflow-hidden">
+      <section className="bg-slate-900 text-white py-24 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pink-600/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
-            {[{ num: "Justice", label: "Lutte contre les VBG" }, { num: "Santé", label: "Droits Sexuels" }, { num: "Avenir", label: "Entrepreneuriat" }].map((stat, idx) => (
-              <div key={idx} className="p-4 group cursor-default">
-                <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-500 mb-2 group-hover:scale-110 transition-transform">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-6">Nos Piliers d'Action</h2>
+            <p className="text-slate-400 text-lg">Trois axes fondamentaux qui guident nos initiatives pour l'autonomisation et la dignité des femmes.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            {[
+              { icon: Scale, num: "Justice", label: "Lutte contre les VBG", desc: "Défense des droits et accompagnement psycho-juridique.", color: "from-blue-500 to-cyan-400", shadow: "shadow-blue-500/20" }, 
+              { icon: HeartPulse, num: "Santé", label: "Droits Sexuels", desc: "Sensibilisation et accès aux soins de santé adaptés.", color: "from-pink-500 to-rose-400", shadow: "shadow-pink-500/20" }, 
+              { icon: Sparkles, num: "Avenir", label: "Entrepreneuriat", desc: "Formation et soutien à l'indépendance financière.", color: "from-yellow-500 to-orange-400", shadow: "shadow-yellow-500/20" }
+            ].map((stat, idx) => (
+              <div key={idx} className="bg-slate-800/50 backdrop-blur-sm p-10 rounded-[2.5rem] group border border-slate-700/50 hover:border-slate-600 transition-all duration-500 hover:-translate-y-2 hover:bg-slate-800">
+                <div className={`w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-8 transform group-hover:scale-110 transition-transform duration-500 shadow-xl ${stat.shadow}`}>
+                   <stat.icon className="w-10 h-10 text-white" />
+                </div>
+                <div className="text-4xl font-black text-white mb-3 tracking-tight">
                   {stat.num}
                 </div>
-                <div className="text-slate-400 font-medium tracking-widest text-sm uppercase">{stat.label}</div>
+                <div className={`text-transparent bg-clip-text bg-gradient-to-r ${stat.color} font-black tracking-widest text-sm uppercase mb-4`}>
+                  {stat.label}
+                </div>
+                <p className="text-slate-400 leading-relaxed font-medium">
+                  {stat.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -172,18 +190,42 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onOpenPost }) => {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: Shield, title: "Lutte VBG", desc: "Lutte contre les violences basées sur le genre.", color: "bg-blue-50 text-blue-600" },
-              { icon: HeartHandshake, title: "Santé", desc: "Droit en santé sexuelle et de la reproduction.", color: "bg-pink-50 text-pink-600" },
-              { icon: Users, title: "Entrepreneuriat", desc: "Formation pour l'autonomisation financière.", color: "bg-yellow-50 text-yellow-600" }
+              { 
+                icon: Shield, 
+                title: "Lutte VBG", 
+                desc: "Lutte contre les violences basées sur le genre. Nous offrons un accompagnement psychologique, juridique et social aux victimes. Notre objectif est de briser le silence, de prévenir ces violences par la sensibilisation et d'assurer un environnement sûr pour chaque femme.", 
+                color: "bg-blue-50 text-blue-600",
+                image: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=800&auto=format&fit=crop"
+              },
+              { 
+                icon: HeartHandshake, 
+                title: "Santé", 
+                desc: "Droit en santé sexuelle et de la reproduction. Nous militons pour un accès équitable aux soins. Cela inclut l'éducation sexuelle, la prévention des maladies, et l'accompagnement des femmes vers des services de santé inclusifs et respectueux.", 
+                color: "bg-pink-50 text-pink-600",
+                image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=800&auto=format&fit=crop"
+              },
+              { 
+                icon: Users, 
+                title: "Entrepreneuriat", 
+                desc: "Formation pour l'autonomisation financière. Nous soutenons la création d'activités génératrices de revenus à travers des ateliers pratiques, des formations en gestion et des micro-financements pour l'indépendance économique.", 
+                color: "bg-yellow-50 text-yellow-600",
+                image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=800&auto=format&fit=crop"
+              }
             ].map((item, idx) => (
-              <div key={idx} className="group relative bg-white p-8 rounded-3xl border border-slate-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-                <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center mb-6`}>
-                  <item.icon className="w-7 h-7" />
+              <div key={idx} className="group relative bg-white rounded-3xl border border-slate-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col overflow-hidden">
+                <div className="h-56 w-full relative overflow-hidden">
+                  <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors z-10"></div>
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                  <div className={`absolute -bottom-6 right-8 z-20 w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center shadow-xl border-4 border-white transform group-hover:rotate-12 transition-transform duration-300`}>
+                    <item.icon className="w-7 h-7" />
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">{item.title}</h3>
-                <p className="text-slate-500 leading-relaxed mb-6">{item.desc}</p>
-                <div className="flex items-center text-slate-900 font-bold text-sm opacity-0 group-hover:opacity-100 transition-all">
-                  Détails <ArrowRight className="ml-2 w-4 h-4" />
+                <div className="p-8 pt-10 flex flex-col flex-1">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4">{item.title}</h3>
+                  <p className="text-slate-600 leading-relaxed mb-8 flex-1">{item.desc}</p>
+                  <div className="flex items-center text-pink-600 font-bold text-sm opacity-0 group-hover:opacity-100 transition-all mt-auto">
+                    Découvrir nos actions <ArrowRight className="ml-2 w-4 h-4" />
+                  </div>
                 </div>
               </div>
             ))}
